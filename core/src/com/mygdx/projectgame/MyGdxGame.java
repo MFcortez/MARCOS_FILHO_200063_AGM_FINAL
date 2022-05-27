@@ -28,6 +28,7 @@ public class MyGdxGame extends ApplicationAdapter {
 	private Texture canoTopo;
 	private Texture gameOver;
 	private Texture logo;
+	private Texture[] coins;
 
 	private ShapeRenderer shapeRenderer;
 	private Circle circuloPassaro;
@@ -94,6 +95,10 @@ public class MyGdxGame extends ApplicationAdapter {
 		canoTopo = new Texture("cano_topo_maior.png");
 		gameOver = new Texture("game_over.png");
 		logo = new Texture("flappy-bird.png");
+
+		//Coins
+		coins[0] = new Texture("Silver_Coin.png");
+		coins[1] = new Texture("Gold_Coin.png");
 	}
 
 	private void inicializaObjetos(){
