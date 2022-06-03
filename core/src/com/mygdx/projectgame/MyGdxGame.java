@@ -32,6 +32,8 @@ public class MyGdxGame extends ApplicationAdapter {
 
 	private ShapeRenderer shapeRenderer;
 	private Circle circuloPassaro;
+	private Circle circuloOuro,
+			circuloPrata;
 	private Rectangle retanguloCanoCima;
 	private Rectangle retanguloCanoBaixo;
 
@@ -49,6 +51,14 @@ public class MyGdxGame extends ApplicationAdapter {
 	private boolean passouCano = false;
 	private int estadoJogo = 0;
 	private float posicaoHorizontalPassaro = 0;
+
+	//Moedas vars de posição e tamanho
+	private float altMoeda,
+				largMoeda;
+	private float posicaoPrataVert,
+			posicaoOuroHor,
+			posicaoPrataHor,
+			posicaoOuroVert;
 
 	BitmapFont textoPontuacao;
 	BitmapFont textoReiniciar;
@@ -97,6 +107,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		logo = new Texture("flappy-bird.png");
 
 		//Coins
+		coins = new  Texture[2];
 		coins[0] = new Texture("Silver_Coin.png");
 		coins[1] = new Texture("Gold_Coin.png");
 	}
@@ -110,6 +121,10 @@ public class MyGdxGame extends ApplicationAdapter {
 		posicaoInicialVerticalPassaro = alturaDispositivo / 2;
 		posicaoCanoHorizontal = larguraDispositivo;
 		espacoEntreCanos = 350;
+
+		//Declarando Vars Moedas
+		altMoeda = 150;
+		largMoeda = 150;
 
 		textoPontuacao = new BitmapFont();
 		textoPontuacao.setColor(Color.WHITE);
@@ -125,6 +140,8 @@ public class MyGdxGame extends ApplicationAdapter {
 
 		shapeRenderer = new ShapeRenderer();
 		circuloPassaro = new Circle();
+		circuloOuro = new Circle();
+		circuloPrata = new Circle();
 		retanguloCanoBaixo = new Rectangle();
 		retanguloCanoCima = new Rectangle();
 
@@ -155,10 +172,20 @@ public class MyGdxGame extends ApplicationAdapter {
 				somVoando.play();
 			}
 			posicaoCanoHorizontal -= Gdx.graphics.getDeltaTime() * 200;
+			posicaoOuroHor -= Gdx.graphics.getDeltaTime() * 200;
+			posicaoPrataHor -= Gdx.graphics.getDeltaTime() * 200;
 			if (posicaoCanoHorizontal < -canoTopo.getWidth()) {
 				posicaoCanoHorizontal = larguraDispositivo;
 				posicaoCanoVertical = random.nextInt(400) - 200;
 				passouCano = false;
+			}
+			if(posicaoPrataHor < -coins[0].getWidth()){
+				posicaoPrataHor = larguraDispositivo;
+				posicaoPrataVert = ((alturaDispositivo/10) * random.nextInt(10)) ;
+			}
+			if(posicaoOuroHor < -coins[1].getWidth()){
+				posicaoOuroHor = larguraDispositivo;
+				posicaoOuroVert = ((alturaDispositivo/10) * random.nextInt(10)) ;
 			}
 			if (posicaoInicialVerticalPassaro > 0 || toqueTela)
 				posicaoInicialVerticalPassaro = posicaoInicialVerticalPassaro - gravidade;
@@ -188,7 +215,16 @@ public class MyGdxGame extends ApplicationAdapter {
 				posicaoInicialVerticalPassaro + passaros[0].getHeight() / 2,
 				passaros[0].getWidth() / 2
 		);
-
+		circuloPrata.set(
+				posicaoPrataHor + coins[0].getWidth(),
+				posicaoPrataVert + coins[0].getHeight(),
+				coins[0].getWidth()
+		);
+		circuloOuro.set(
+				posicaoOuroHor + coins[1].getWidth(),
+				posicaoOuroVert + coins[1].getHeight(),
+				coins[1].getWidth()
+		);
 		retanguloCanoBaixo.set(
 				posicaoCanoHorizontal,
 				alturaDispositivo / 2 - canoBaixo.getHeight() - espacoEntreCanos / 2 + posicaoCanoVertical,
@@ -214,6 +250,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		private void desenharTexturas() {
 			batch.setProjectionMatrix(camera.combined);
 			batch.begin();
+
 			batch.draw(fundo, 0, 0, larguraDispositivo, alturaDispositivo);
 			batch.draw(passaros[(int) variacao],
 					50 + posicaoHorizontalPassaro, posicaoInicialVerticalPassaro);
@@ -223,7 +260,8 @@ public class MyGdxGame extends ApplicationAdapter {
 					alturaDispositivo / 2 + espacoEntreCanos / 2 + posicaoCanoVertical);
 			textoPontuacao.draw(batch, String.valueOf(pontos),
 					larguraDispositivo / 2, alturaDispositivo - 110);
-
+			batch.draw(coins[0], posicaoPrataHor, posicaoPrataVert, largMoeda, altMoeda);
+			batch.draw(coins[1], posicaoOuroHor, posicaoOuroVert, largMoeda + 50, altMoeda + 50);
 			if (estadoJogo == 0) {
 				batch.draw(logo, larguraDispositivo / 2 - logo.getWidth() / 2,
 						alturaDispositivo / 2);
@@ -244,13 +282,24 @@ public class MyGdxGame extends ApplicationAdapter {
 		}
 
 	private void validarPontos(){
-
+		boolean pegouOuro = Intersector.overlaps(circuloPassaro, circuloOuro);
+		boolean pegouPrata = Intersector.overlaps(circuloPassaro, circuloPrata);
 		if(posicaoCanoHorizontal < 50-passaros[0].getWidth()){
 			if(!passouCano){
 				pontos++;
 				passouCano = true;
 				somPontuacao.play();
 			}
+		}
+		if (pegouOuro){
+			pontos+= 10;
+			somPontuacao.play();
+			posicaoOuroHor = larguraDispositivo;
+		}
+		if (pegouPrata){
+			pontos+= 5;
+			somPontuacao.play();
+			posicaoPrataHor = larguraDispositivo;
 		}
 		variacao += Gdx.graphics.getDeltaTime() * 10;
 
